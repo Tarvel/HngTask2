@@ -16,7 +16,6 @@ def index():
 @auth.route('/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
-    userId = data['userId']
     firstName = data['firstName']
     lastName = data['lastName']
     email = data['email']
@@ -33,14 +32,13 @@ def register():
                     errors.append({"field": field, "message": field + " should not be empty"})
             if 'email' in data and User.query.filter_by(email=email).first():
                 errors.append({"field": "email", "message": "email already exists"})
-            if 'userId' in data and User.query.filter_by(id=userId).first():
-                errors.append({"field": "userID", "message": "user already exists"})
+           
             
             if errors:
                 return jsonify({"errors": errors}), 422
             
             default_organisation_name = f"{firstName}'s Organisation"
-            user = User(id=userId, firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
+            user = User( firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
             org = Organisation(name=default_organisation_name)
             db.session.add(user)
             db.session.add(org)
