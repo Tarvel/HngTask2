@@ -39,12 +39,14 @@ def register():
                 valid_email = validate_email(email).email
             except EmailNotValidError as e:
                 errors.append({"field": "email", "message": str(e)})
+                
+            if 'email' in data and User.query.filter_by(email=email).first():
+                errors.append({"field": "email", "message": "email already exists"})
             
             for field in required_fields:
                 if field not in data or not data[field]:
                     errors.append({"field": field, "message": field + " should not be empty"})
-            if 'email' in data and User.query.filter_by(email=email).first():
-                errors.append({"field": "email", "message": "email already exists"})
+            
            
             
             if errors:
