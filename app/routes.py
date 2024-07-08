@@ -25,18 +25,20 @@ def register():
     
     try:
 
-        try:
-            valid_email = validate_email(email).email
-        except EmailNotValidError as e:
-            return jsonify({"status": "error", "message": str(e)}), 400
+       
             
         if request.method == 'POST':
             required_fields = ['firstName', 'lastName', 'email']
             errors = []
-        if password:
-            hashed_pwd = bcrypt.generate_password_hash(password, 10).decode('utf-8')
-        else:
-            errors.append({"field": "password", "message":  "password should not be empty"})
+            if password:
+                hashed_pwd = bcrypt.generate_password_hash(password, 10).decode('utf-8')
+            else:
+                errors.append({"field": "password", "message":  "password should not be empty"})
+
+            try:
+                valid_email = validate_email(email).email
+            except EmailNotValidError as e:
+                errors.append({"field": "email", "message": str(e)})
             
             for field in required_fields:
                 if field not in data or not data[field]:
