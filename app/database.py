@@ -6,7 +6,7 @@ user_org = db.Table('user_org',
                     db.Column('org_id', db.String, db.ForeignKey('organisation.id')))
 
 class User(db.Model):
-    id = db.Column(db.String, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4())))
     firstName = db.Column(db.String, nullable=False)
     lastName = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -20,7 +20,7 @@ class User(db.Model):
 
 
 class Organisation(db.Model):
-    id = db.Column(db.String, primary_key=True)
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4())))
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, default="")
 
