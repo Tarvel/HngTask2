@@ -2,11 +2,11 @@ from app import db
 
 
 user_org = db.Table('user_org',
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                    db.Column('org_id', db.Integer, db.ForeignKey('organisation.id')))
+                    db.Column('user_id', db.String, db.ForeignKey('user.id')),
+                    db.Column('org_id', db.String, db.ForeignKey('organisation.id')))
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     firstName = db.Column(db.String, nullable=False)
     lastName = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -20,7 +20,7 @@ class User(db.Model):
 
 
 class Organisation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, default="")
 
