@@ -4,6 +4,7 @@ from app.database import User, Organisation
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import datetime
+from email_validator import validate_email, EmailNotValidError
 import uuid
 
 auth = Blueprint('auth', __name__)
@@ -23,10 +24,20 @@ def register():
     phone = data['phone']
     
     try:
-        hashed_pwd = bcrypt.generate_password_hash(password, 10).decode('utf-8')
+
+        try:
+            valid_email = validate_email(email).email
+        except EmailNotValidError as e:
+            return jsonify({"status": "error", "message": str(e)}), 400
+            
         if request.method == 'POST':
-            required_fields = ['firstName', 'lastName', 'email', 'password']
+            required_fields = ['firstName', 'lastName', 'email']
             errors = []
+        if password:
+            hashed_pwd = bcrypt.generate_password_hash(password, 10).decode('utf-8')
+        else:
+            errors.append({"field": "password", "message":  "password should not be empty"})
+            
             for field in required_fields:
                 if field not in data or not data[field]:
                     errors.append({"field": field, "message": field + " should not be empty"})
