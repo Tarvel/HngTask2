@@ -1,4 +1,5 @@
 from app import db
+import uuid
 
 
 user_org = db.Table('user_org',
