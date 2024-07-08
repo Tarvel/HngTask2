@@ -19,7 +19,6 @@ def index():
 def resgister():
     data = request.get_json()
     userId = data['userId']
-    userId_int = int(userId)
     firstName = data['firstName']
     lastName = data['lastName']
     email = data['email']
@@ -39,7 +38,7 @@ def resgister():
                                 "message": field + " should not be empty"})
             if 'email' in data and User.query.filter_by(email=email).first():
                 errors.append({"field": "email", "message": "email already exists"})
-            if 'userId' in data and User.query.filter_by(id=userId_int).first():
+            if 'userId' in data and User.query.filter_by(id=userId).first():
                 errors.append({"field": "userID", "message": "user already exists"})
             
             if errors:
@@ -48,7 +47,7 @@ def resgister():
             else:
                 default_organisation_name = (firstName + "'s Organisation")
 
-                user = User(id = userId_int, firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
+                user = User(id = userId, firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
                 org = Organisation(name=default_organisation_name)
 
                 db.session.add(user)
@@ -104,7 +103,7 @@ def login():
     
 
 
-@api.route('/api/users/<int:user_id>', methods=['GET'])
+@api.route('/api/users/<string:user_id>', methods=['GET'])
 @jwt_required()
 def users(user_id):
     user = User.query.get_or_404(user_id)
@@ -149,7 +148,7 @@ def organisations_list():
     }
     return jsonify(user_organisations), 200
 
-@api.route('/api/organisations/<int:orgId>', methods=['GET'])
+@api.route('/api/organisations/<string:orgId>', methods=['GET'])
 @jwt_required()
 def all_organisations(orgId):
     org = Organisation.query.filter_by(id=orgId).first()
@@ -206,12 +205,11 @@ def create_organisation():
                 return jsonify(response), 201
 
 
-@api.route('/api/organisations/<int:orgId>/users', methods=['POST'])
+@api.route('/api/organisations/<string:orgId>/users', methods=['POST'])
 def add_to_org(orgId):
     data = request.get_json()
     userId = data['userId']
-    userId_int = int(userId)
-    user = User.query.get(userId_int)
+    user = User.query.get(userId)
     org = Organisation.query.filter_by(id=orgId).first()
     
     if user is None:
