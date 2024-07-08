@@ -2,6 +2,11 @@ from app import db
 import uuid
 
 
+user_org = db.Table('user_org',
+                    db.Column('user_id', db.String, db.ForeignKey('user.id')),
+                    db.Column('org_id', db.String, db.ForeignKey('organisation.id')))
+
+
 class User(db.Model):
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     firstName = db.Column(db.String, nullable=False)
@@ -23,6 +28,3 @@ class Organisation(db.Model):
     def __repr__(self):
         return f"Organisation('{self.name}')"
 
-user_org = db.Table('user_org',
-                    db.Column('user_id', db.String, db.ForeignKey('user.id')),
-                    db.Column('org_id', db.String, db.ForeignKey('organisation.id')))
