@@ -146,6 +146,7 @@ def organisations_list():
             "organisations": organisation_list
         }
     }
+    print(data)
     return jsonify(user_organisations), 200
 
 @api.route('/api/organisations/<string:orgId>', methods=['GET'])
