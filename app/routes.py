@@ -11,9 +11,9 @@ auth = Blueprint('auth', __name__)
 api = Blueprint('api', __name__)
 
 
-@auth.route('/', methods=['GET'])
+@auth.route('/')
 def index():
-     jsonify({"status": "sucess", "message": "API is running"}), 200
+     return jsonify({"status": "sucess", "message": "API is running"}), 200
 
 @auth.route('/auth/register', methods=['POST'])
 def resgister():
