@@ -7,7 +7,7 @@ async-generator==1.10
 attrs==22.2.0
 backoff==2.2.1
 bcrypt==4.1.1
-beautifulsoup4==4.12.3
+base-url==2.1.0
 bidict==0.23.1
 blinker==1.6.2
 bs4==0.0.2
@@ -38,6 +38,7 @@ Flask-SQLAlchemy==3.1.1
 Flask-Migrate==2.4.0
 gunicorn==21.2.0
 protobuf==4.25.3
+pluggy==1.5.0
 psycopg2-binary==2.9.9
 pyee==11.1.0
 Pygments==2.16.1
