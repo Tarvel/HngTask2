@@ -4,19 +4,17 @@ from app.database import User, Organisation
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import datetime
-
+import uuid
 
 auth = Blueprint('auth', __name__)
-
 api = Blueprint('api', __name__)
-
 
 @auth.route('/')
 def index():
-     return jsonify({"status": "sucess", "message": "API is running"}), 200
+    return jsonify({"status": "success", "message": "API is running"}), 200
 
 @auth.route('/auth/register', methods=['POST'])
-def resgister():
+def register():
     data = request.get_json()
     userId = data['userId']
     firstName = data['firstName']
@@ -24,8 +22,6 @@ def resgister():
     email = data['email']
     password = data['password']
     phone = data['phone']
-
-    
     
     try:
         hashed_pwd = bcrypt.generate_password_hash(password, 10).decode('utf-8')
@@ -34,8 +30,7 @@ def resgister():
             errors = []
             for field in required_fields:
                 if field not in data or not data[field]:
-                    errors.append({"field": field, 
-                                "message": field + " should not be empty"})
+                    errors.append({"field": field, "message": field + " should not be empty"})
             if 'email' in data and User.query.filter_by(email=email).first():
                 errors.append({"field": "email", "message": "email already exists"})
             if 'userId' in data and User.query.filter_by(id=userId).first():
@@ -44,37 +39,34 @@ def resgister():
             if errors:
                 return jsonify({"errors": errors}), 422
             
-            else:
-                default_organisation_name = (firstName + "'s Organisation")
-
-                user = User(id = userId, firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
-                org = Organisation(name=default_organisation_name)
-
-                db.session.add(user)
-                db.session.add(org)
-                
-                user.organisation.append(org)
-                db.session.commit()
-                
-                access_token = create_access_token(identity={'userId': user.id})
-
-                sucesss = {"status": "success",
-                        "message": "Registration successful",
-                        "data": {
-                            "accessToken": access_token,
-                            "user": {
-                                "userId": user.id,
-                                "firstName": user.firstName,
-                                "lastName": user.lastName,
-                                "email": user.email,
-                                "phone": user.phone}}}
-                return jsonify(sucesss), 201
+            default_organisation_name = f"{firstName}'s Organisation"
+            user = User(id=userId, firstName=firstName, lastName=lastName, email=email, password=hashed_pwd, phone=phone)
+            org = Organisation(name=default_organisation_name)
+            db.session.add(user)
+            db.session.add(org)
+            user.organisation.append(org)
+            db.session.commit()
             
+            access_token = create_access_token(identity={'userId': user.id})
+            success = {
+                "status": "success",
+                "message": "Registration successful",
+                "data": {
+                    "accessToken": access_token,
+                    "user": {
+                        "userId": user.id,
+                        "firstName": user.firstName,
+                        "lastName": user.lastName,
+                        "email": user.email,
+                        "phone": user.phone
+                    }
+                }
+            }
+            return jsonify(success), 201
 
     except IntegrityError:
         db.session.rollback()
         return jsonify({"status": "Bad request", "message": "Registration unsuccessful", "statusCode": 400}), 400
-    
 
 @auth.route('/auth/login', methods=['POST'])
 def login():
@@ -85,8 +77,7 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'userId': user.id})
-        
-        sucess = {
+        success = {
             "status": "success",
             "message": "Login successful",
             "data": {
@@ -96,12 +87,13 @@ def login():
                     "firstName": user.firstName,
                     "lastName": user.lastName,
                     "email": user.email,
-                    "phone": user.phone}}}
-        return jsonify(sucess), 200
+                    "phone": user.phone
+                }
+            }
+        }
+        return jsonify(success), 200
     else:
         return jsonify({"status": "Bad request", "message": "Login unsuccessful", "statusCode": 400}), 400
-    
-
 
 @api.route('/api/users/<string:user_id>', methods=['GET'])
 @jwt_required()
@@ -109,24 +101,22 @@ def users(user_id):
     user = User.query.get_or_404(user_id)
     current_user = get_jwt_identity()
 
-    for orgs in User.query.filter_by(id=current_user['userId']).first().organisation: 
+    for orgs in User.query.filter_by(id=current_user['userId']).first().organisation:
         if orgs in user.organisation:
-            user_detail =  {
+            user_detail = {
                 "status": "success",
-                "message": "user gotten sucessfully",
+                "message": "User gotten successfully",
                 "data": {
-                "userId": user.id,
-                "firstName": user.firstName,
-                "lastName": user.lastName,
-                "email": user.email,
-                "phone": user.phone
+                    "userId": user.id,
+                    "firstName": user.firstName,
+                    "lastName": user.lastName,
+                    "email": user.email,
+                    "phone": user.phone
                 }
             }
-            
             return jsonify(user_detail), 200
-        else:
-            return {'message':'unauthorized access'}
-            
+    return jsonify({'message': 'Unauthorized access'}), 401
+
 @api.route('/api/organisations', methods=['GET'])
 @jwt_required()
 def organisations_list():
@@ -135,18 +125,19 @@ def organisations_list():
     user = User.query.get(current_user['userId']).organisation
 
     for orgs in user:
-        organisation_list.append({"orgId": str(orgs.id), 
-                                "name": orgs.name,
-                                "description": orgs.description})
-        
+        organisation_list.append({
+            "orgId": str(orgs.id),
+            "name": orgs.name,
+            "description": orgs.description
+        })
+
     user_organisations = {
         "status": "success",
-        "message": "organisations gotten sucessfully",
+        "message": "Organisations gotten successfully",
         "data": {
             "organisations": organisation_list
         }
     }
-    print(data)
     return jsonify(user_organisations), 200
 
 @api.route('/api/organisations/<string:orgId>', methods=['GET'])
@@ -157,21 +148,21 @@ def all_organisations(orgId):
     user_orgs = User.query.filter_by(id=current_user['userId']).first().organisation
 
     if org not in Organisation.query.all():
-            return jsonify({"status": "error", "message": "Organization doesn't exist"}), 404
+        return jsonify({"status": "error", "message": "Organization doesn't exist"}), 404
 
     if org in user_orgs:
         organisation = {
             "status": "success",
-            "message": "organisation gotten sucessfully",
+            "message": "Organisation gotten successfully",
             "data": {
                 "orgId": org.id,
-                "name": org.name, 
-                "description": org.description}}
-        return jsonify(organisation),200
-    
+                "name": org.name,
+                "description": org.description
+            }
+        }
+        return jsonify(organisation), 200
     else:
         return jsonify({"status": "error", "message": "You do not have access to this organisation"}), 401
-    
 
 @api.route('/api/organisations', methods=['POST'])
 @jwt_required()
@@ -185,26 +176,27 @@ def create_organisation():
         errors = []
         for field in required_fields:
             if field not in data or not data[field]:
-                errors.append({"field": field, 
-                    "message": field + " should not be empty"})
-            else:    
-                current_user = get_jwt_identity()
-                user = User.query.get(current_user['userId'])
-                org = Organisation(name=name, description=description)
+                errors.append({"field": field, "message": field + " should not be empty"})
+        
+        if errors:
+            return jsonify({"errors": errors}), 422
 
-                user.organisation.append(org)
-                db.session.commit()
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user['userId'])
+        org = Organisation(name=name, description=description)
+        user.organisation.append(org)
+        db.session.commit()
 
-                response = {
-                "status": "success",
-                "message": "Organisation created successfully",
-                "data": {
-                    "orgId": org.id, 
-                    "name": org.name, 
-                    "description": org.description}}
-                
-                return jsonify(response), 201
-
+        response = {
+            "status": "success",
+            "message": "Organisation created successfully",
+            "data": {
+                "orgId": org.id,
+                "name": org.name,
+                "description": org.description
+            }
+        }
+        return jsonify(response), 201
 
 @api.route('/api/organisations/<string:orgId>/users', methods=['POST'])
 def add_to_org(orgId):
@@ -214,20 +206,12 @@ def add_to_org(orgId):
     org = Organisation.query.filter_by(id=orgId).first()
     
     if user is None:
-        return jsonify({
-            "status": "error",
-            "message": "User does not exist"}), 404
-    else:    
-        user.organisation.append(org)
-
+        return jsonify({"status": "error", "message": "User does not exist"}), 404
+    
     if org is None:
-        return jsonify({
-    "status": "error",
-    "message": "Organisation does not exist"}), 404
-    else:    
-        user.organisation.append(org)
-        
-        return jsonify({
-        "status": "success",
-        "message": "User added to organisation successfully"}), 200
+        return jsonify({"status": "error", "message": "Organisation does not exist"}), 404
 
+    user.organisation.append(org)
+    db.session.commit()
+    
+    return jsonify({"status": "success", "message": "User added to organisation successfully"}), 200
