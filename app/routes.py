@@ -46,7 +46,7 @@ def register():
     phone = data['phone']
 
 
-    if "errors" not in data:
+    if len(data) == 0:
        return jsonify({"errors": [
     {
         "field": "email",
