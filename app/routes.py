@@ -44,6 +44,27 @@ def register():
     email = data['email']
     password = data['password']
     phone = data['phone']
+
+
+    if data == {}:
+       return jsonify({"errors": [
+    {
+        "field": "email",
+        "message": "Email is required"
+    },
+    {
+        "field": "password",
+        "message": "Password is required"
+    },
+    {
+        "field": "firstName",
+        "message": "FirstName is required"
+    },
+    {
+        "field": "lastName",
+        "message": "LastName is required"
+    }
+]}), 422
     
     try:
 
