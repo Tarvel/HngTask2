@@ -120,9 +120,16 @@ def register():
             }
             return jsonify(success), 201
 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e), "statusCode: 400}), 400
+
     except IntegrityError:
         db.session.rollback()
         return jsonify({"status": "Bad request", "message": "Registration unsuccessful", "statusCode": 400}), 400
+
+
+    
 
 @auth.route('/auth/login', methods=['POST'])
 def login():
