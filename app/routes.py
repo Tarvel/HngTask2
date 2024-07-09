@@ -16,6 +16,28 @@ def index():
 
 @auth.route('/auth/register', methods=['POST'])
 def register():
+
+    if request.content_type != 'application/json':
+
+       return jsonify("errors": [
+    {
+        "field": "email",
+        "message": "Email is required"
+    },
+    {
+        "field": "password",
+        "message": "Password is required"
+    },
+    {
+        "field": "firstName",
+        "message": "FirstName is required"
+    },
+    {
+        "field": "lastName",
+        "message": "LastName is required"
+    }
+]), 422
+
     data = request.get_json()
     firstName = data['firstName']
     lastName = data['lastName']
