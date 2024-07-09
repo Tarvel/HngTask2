@@ -19,7 +19,7 @@ def register():
 
     if request.content_type != 'application/json':
 
-       return jsonify("errors": [
+       return jsonify({"errors": [
     {
         "field": "email",
         "message": "Email is required"
@@ -36,7 +36,7 @@ def register():
         "field": "lastName",
         "message": "LastName is required"
     }
-]), 422
+]}), 422
 
     data = request.get_json()
     firstName = data['firstName']
