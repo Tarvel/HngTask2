@@ -120,7 +120,7 @@ def register():
             }
             return jsonify(success), 201
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         return jsonify({"status": "Bad request", "message": "Registration unsuccessful", "statusCode": 400}), 400
 
